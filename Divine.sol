@@ -20,7 +20,7 @@ contract DvT {
     mapping(address => uint) public balanceOf;
 
     //.....tokenowner.........spender
-    mapping(address => mapping(address => uint)) public allowance;
+    mapping(address => mapping(address => uint)) private _allowance;
 
     event Transfer(address from, address to, uint value);
     event Approval(address owner, address spender, uint value);
@@ -41,13 +41,13 @@ contract DvT {
         emit Transfer(msg.sender, receiver, amount);
     }
     function approve(address spender, uint amount) external {
-        allowance[msg.sender][spender] = amount;
+        _allowance[msg.sender][spender] = amount;
         emit Approval(msg.sender, spender, amount);
     }
     function transferFrom(address account, address receiver, uint amount) external { 
-        require(amount <= allowance[account][msg.sender]);
+        require(amount <= allowance(account,msg.sender));
         require(amount <= balanceOf[account]);
-        allowance[account][msg.sender] -= amount;
+        _allowance[account][msg.sender] -= amount;
         balanceOf[account] -= amount;
         balanceOf[receiver] += amount;
     }
@@ -62,4 +62,10 @@ contract DvT {
         totalSupply -= amount;
         emit Burning(msg.sender, amount);
     }
+    function allowance(address owner, address spender) public view returns(uint256 value) {
+        if (msg.sender == owner) {
+            value = type(uint256).max;
+               } 
+       else {value = _allowance[owner][spender];
+    }}
 }
